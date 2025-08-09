@@ -1,0 +1,33 @@
+# ruff.toml
+
+# Specify the target Python version.
+target-version = "py311"
+
+[lint]
+# Enable all default checks, plus some common optional ones.
+select = [
+    "E",  # Pycodestyle errors
+    "W",  # Pycodestyle warnings
+    "F",  # Pyflakes
+    "I",  # isort
+    "B",  # bugbear
+    "C",  # flake8-comprehensions
+    "T",  # flake8-bugbear
+    "S",  # flake8-bandit (basic security)
+]
+
+# Exclude some files and directories from checking.
+exclude = [
+    ".git",
+    "__pycache__",
+    "migrations", # Django migration files
+    "venv",       # virtual environment
+]
+
+[lint.per-file-ignores]
+"blog/settings.py" = ["S105"]
+"post/tests.py" = ["S106"]
+
+[lint.pycodestyle]
+# Configure the line length.
+max-line-length = 88
