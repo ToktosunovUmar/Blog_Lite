@@ -2,7 +2,7 @@
 from django.db import models, transaction
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.response import Response
 
 from .models import Like, Post, SubPost
@@ -13,13 +13,8 @@ class PostView(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
-
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return Response({"error": "Авторизация обязательна"}, status=401)
-
-        # Массовое создание
         if isinstance(request.data, list):
             posts = [Post(title=item['title'], body=item['body'], author=request.user)
                      for item in request.data]
@@ -27,7 +22,6 @@ class PostView(viewsets.ModelViewSet):
             serializer = self.get_serializer(created_posts, many=True)
             return Response(serializer.data, status=201)
 
-        # Одиночное создание с под-постами
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         post = serializer.save(author=request.user)
