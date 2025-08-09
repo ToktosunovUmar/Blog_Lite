@@ -1,25 +1,35 @@
+# Имя вашего рабочего процесса
 name: CI/CD Pipeline
 
+# Триггер: рабочий процесс запускается при каждом push в ветку 'main'
 on:
   push:
     branches:
       - main
 
+# Задачи, которые будут выполнены
 jobs:
   test_and_lint:
+    # Рабочий процесс будет выполняться на последней версии Ubuntu
     runs-on: ubuntu-latest
 
+    # Шаги, которые будут выполнены в рамках этой задачи
     steps:
+      # Шаг 1: Клонирование вашего репозитория
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Docker and Docker Compose
-        uses: docker-practice/actions-setup-docker@v1
+      # Шаг 2: Установка Docker Compose
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
 
+      # Шаг 3: Сборка и запуск контейнеров с помощью Docker Compose
       - name: Build and run containers
         run: docker-compose up -d --build
 
-
+      # Шаг 4: Ожидание готовности базы данных PostgreSQL
       - name: Wait for database to be ready
         run: |
           echo "Waiting for PostgreSQL to be ready..."
@@ -39,16 +49,19 @@ jobs:
             exit 1
           fi
 
+      # Шаг 5: Проверка кода с помощью ruff
       - name: Run Ruff checks
         run: docker-compose exec app ruff check .
 
+      # Шаг 6: Выполнение миграций базы данных
       - name: Apply migrations
         run: docker-compose exec app python manage.py migrate
 
-
+      # Шаг 7: Запуск тестов Django
       - name: Run Django tests
         run: docker-compose exec app python manage.py test
 
+      # Шаг 8: Остановка контейнеров после завершения
       - name: Stop containers
         if: always()
         run: docker-compose down
