@@ -36,7 +36,8 @@ jobs:
           max_retries=10
           retry_count=0
           while [ $retry_count -lt $max_retries ]; do
-            if docker-compose exec db pg_isready -U user -h localhost; then
+            # Используем флаг -T для неинтерактивного режима
+            if docker-compose exec -T db pg_isready -U user -h localhost; then
               echo "PostgreSQL is ready!"
               break
             fi
@@ -51,15 +52,18 @@ jobs:
 
       # Шаг 5: Проверка кода с помощью ruff
       - name: Run Ruff checks
-        run: docker-compose exec app ruff check .
+        # Используем флаг -T
+        run: docker-compose exec -T app ruff check .
 
       # Шаг 6: Выполнение миграций базы данных
       - name: Apply migrations
-        run: docker-compose exec app python manage.py migrate
+        # Используем флаг -T
+        run: docker-compose exec -T app python manage.py migrate
 
       # Шаг 7: Запуск тестов Django
       - name: Run Django tests
-        run: docker-compose exec app python manage.py test
+        # Используем флаг -T
+        run: docker-compose exec -T app python manage.py test
 
       # Шаг 8: Остановка контейнеров после завершения
       - name: Stop containers
